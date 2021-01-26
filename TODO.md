@@ -1,6 +1,6 @@
 # todo
 
-fix bug non-ascii / unicode characters when being sent
+~~fix bug non-ascii / unicode characters when being sent~~
 
 add options
 

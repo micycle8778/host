@@ -1,5 +1,6 @@
 import asynchttpserver, asyncdispatch
-import strutils, os, re, algorithm
+import strutils, os, re, algorithm, tables
+import mimetypes, strformat
 
 # Embed some important resources
 const directory_html = slurp"../assets/directory.html"
@@ -30,6 +31,9 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
     # 3b. If not found, send directory.html
     # 4. If nothing is found, send a 404
 
+    proc generateHeader(mime: string): HttpHeaders =
+      @[("content-type", fmt"{mime}; charset=UTF-8")].newHttpHeaders
+
     type Warning = enum
       wNoIndex = "no index.html found"
       wRequested = "directory.html requested"
@@ -50,6 +54,8 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
     echo req.url.path
     echo workingPath
     echo()
+
+    const header = "{mime}; charset=UTF-8"
 
     proc DirectoryHtmlRequested(query: seq[string]): bool =
       for q in query:
@@ -91,26 +97,33 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
       result = result.replace("{files}", htmlToInsert)
 
     if req.url.path.contains(".."):
-      await req.respond(Http400, "Error 400: why are you using `..`?")
+      await req.respond(Http400, "Error 400: why are you using `..`?",
+                        headers = generateHeader("text/plain"))
 
     elif not (req.url.query == "") and
          DirectoryHtmlRequested(req.url.query.split("&")):
       if fileExists(workingPath):
         workingPath = parentDir(workingPath)
-      await req.respond(Http200, generateDirectoryDotHtml(wRequested))
+      await req.respond(Http200, generateDirectoryDotHtml(wRequested),
+                        headers = generateHeader("text/html"))
 
     elif dirExists(workingPath):
       let indexPath = combineDir(workingPath, "/index.html")
       if fileExists(indexPath):
-        await req.respond(Http200, readFile(indexPath))
+
+        await req.respond(Http200, readFile(indexPath),
+                          headers = generateHeader("text/html"))
       else:
-        await req.respond(Http200, generateDirectoryDotHtml(wNoIndex))
+        await req.respond(Http200, generateDirectoryDotHtml(wNoIndex),
+                          headers = generateHeader("text/html"))
 
     elif fileExists(workingPath):
-      await req.respond(Http200, readFile(workingPath))
-
+      let m = newMimeTypes()
+      await req.respond(Http200, readFile(workingPath),
+                        headers = generateHeader(m.getMimeType(workingPath.splitFile.ext)))
     else:
-      await req.respond(Http404, "Could not find file " & req.url.path)
+      await req.respond(Http404, "Could not find file " & req.url.path,
+                        headers=generateHeader("text/plain"))
 
   requestHandler
 
@@ -125,5 +138,5 @@ if paramCount() > 0:
   else:
     echo f, " doesn't exist!"
 else:
-  echo "You need to the filename to serve."
+  echo "Usage: host <filename/dirname>"
 
