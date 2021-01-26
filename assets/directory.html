@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <title>host landing page</title>
+        <style>
+            body {
+                margin: 0;
+                background-color: #111;
+                color: white;
+                font-family: sans-serif;
+
+                display: flex;
+                flex-flow: column;
+                height: 100%;
+            }
+
+            header {
+                flex: 0 1 auto;
+                color: white;
+                font: 2em/1.62 sans-serif;
+                padding: 0.5rem 0;
+                padding-left: 2rem;
+                background-color: #333;
+                font-style: italic;
+            }
+
+            .files {
+                flex: 1 1 auto;
+                margin: 0 auto;
+                width: 100%;
+                overflow-y: scroll;
+            }
+
+            .files h1 {
+                font-weight: normal;
+                font-size: 3em;
+                margin-left: 4rem;
+            }
+
+            .file-container {
+                display: flex;
+                margin: auto;
+                width: 80%;
+                flex-wrap: wrap;
+            }
+
+            .file {
+                font-size: 2em;
+                margin-right: 2rem;
+                margin-bottom: 0.5rem;
+                background-color: #222;
+                vertical-align: middle;
+                color: white;
+                text-decoration: initial;
+                padding: 0 2rem;
+                padding-bottom: 0.25em;
+                padding-top: 0.35em;
+            }
+
+            .file:hover {
+                background-color: #444;
+            }
+
+            footer {
+                flex: 0 1 auto;
+                background-color: #333;
+                padding: 0.25rem 0;
+                padding-left: 1rem;
+                font-style: italic;
+                font-size: 0.85em;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            host - {warn}
+        </header>
+        <div class="files">
+            <h1>{path}</h1>
+            <div class="file-container">
+                {files}
+            </div>
+        </div>
+        <footer>host - a simple, static web server for easily hosting files over LAN. made with &lt3 in nim</footer>
+    </body>
+</html>
