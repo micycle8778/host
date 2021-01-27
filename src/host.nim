@@ -1,22 +1,65 @@
 import asynchttpserver, asyncdispatch
 import strutils, os, re, algorithm, tables
-import mimetypes, strformat
+import mimetypes, strformat, parseopt, parseutils
 
 # Embed some important resources
 const directory_html = slurp"../assets/directory.html"
 const file_html = slurp"../assets/file.html"
+const help_text = """Usage: host [options] [file]
 
-var server = newAsyncHttpServer()
+Options:
+  --help              : Show this help text
+  -i, --stdin         : Host from stdin. Ignore file parameter.
+  -h, --hidden        : Shows hidden files.
+  -q, --quiet         : Hide request logs.
+  --output [file]     : Output request logs to a file.
+  --port [port]       : Host on a specific port (default 8080)"""
 
-let showHidden = false
+type
+  InputType = enum
+    itFile,
+    itDir,
+    itStdIn
+
+  Input = object
+    case inputType: InputType
+    of itFile, itDir: path: string
+    of itStdIn: str: string
+
+type
+  RequestLogType = enum
+    rltEcho, rltNone, rltFile
+
+  RequestLogState = object
+    case rlType: RequestLogType
+    of rltFile: file: File
+    else: discard
+
+var showHidden = false
+var requestLogState = RequestLogState(rlType: rltEcho)
 
 proc combineDir(sub, tail: string): string =
   let tail = if tail[0] == '/': tail else: '/' & tail
   if sub[^1] == '/': sub[0..^2] & tail
   else: sub & tail
 
+proc logRequest(req: Request) =
+  if requestLogState.rlType != rltNone:
+    let log = fmt"req: {req.url.path} ; by: {req.hostname}"
+    if requestLogState.rlType == rltFile:
+      requestLogState.file.write(log & '\n')
+    else:
+      echo log
+
+proc generateRequestHandlerFromString(data: string): proc =
+  proc requestHandler(req: Request) {.async.} =
+    req.logRequest()
+    await req.respond(Http200, data)
+  requestHandler
+
 proc generateRequestHandlerFromFile(fileName: string): proc =
   proc requestHandler(req: Request) {.async.} =
+    req.logRequest()
     await req.respond(Http200, readFile(fileName))
   requestHandler
 
@@ -32,7 +75,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
     # 4. If nothing is found, send a 404
 
     proc generateHeader(mime: string): HttpHeaders =
-      @[("content-type", fmt"{mime}; charset=UTF-8")].newHttpHeaders
+      [("content-type", fmt"{mime}; charset=UTF-8")].newHttpHeaders
 
     type Warning = enum
       wNoIndex = "no index.html found"
@@ -50,10 +93,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
     var workingPath = combineDir(dir, req.url.path)
     workingPath = workingPath.replace(re"%20", " ")
 
-    echo dir
-    echo req.url.path
-    echo workingPath
-    echo()
+    req.logRequest()
 
     const header = "{mime}; charset=UTF-8"
 
@@ -127,16 +167,60 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
 
   requestHandler
 
-if paramCount() > 0:
-  let f = paramStr(1)
-  if fileExists(f):
-    echo "Starting server!"
-    waitFor server.serve(Port(8080), generateRequestHandlerFromFile(f))
-  elif dirExists(f):
-    echo "Starting server!"
-    waitFor server.serve(Port(8080), generateRequestHandlerFromDirectory(f))
+proc main(input: Input, port: Natural) =
+  var server = newAsyncHttpServer()
+
+  echo "Starting server!"
+  case input.inputType:
+    of itFile:
+      waitFor server.serve(Port(port),
+                           generateRequestHandlerFromFile(input.path))
+    of itDir:
+      waitFor server.serve(Port(port),
+                           generateRequestHandlerFromDirectory(input.path))
+    of itStdIn:
+      waitFor server.serve(Port(port),
+                           generateRequestHandlerFromString(input.str))
+
+when isMainModule:
+  var port = 8080
+  var stdinMode = false
+  var filename: string
+
+  var p = initOptParser(shortNoVal = {'i', 'h', 'q'},
+                        longNoVal = @["stdin", "hidden", "quiet"])
+  for kind, key, val in p.getOpt():
+    case kind
+      of cmdArgument:
+        filename = key
+      else:
+        case key
+          of "stdin", "i":
+            stdinMode = true
+          of "hidden", "h":
+            showHidden = true
+          of "quiet", "q":
+            requestLogState = RequestLogState(rlType: rltNone)
+          of "output":
+            requestLogState = RequestLogState(rlType: rltFile,
+                                              file: open(val, fmWrite))
+          of "port":
+            discard parseInt(val, port)
+          else: # or `of "help"`
+            if key != "help": echo fmt"I didn't understand option `{key}`!\n"
+            echo help_text
+            quit()
+
+  if stdinMode:
+    main(Input(inputType: itStdIn, str: stdin.readAll()), port.Natural)
   else:
-    echo f, " doesn't exist!"
-else:
-  echo "Usage: host <filename/dirname>"
+    if filename == "":
+      echo "No filename passed in!\n"
+      echo help_text
+    elif fileExists(filename):
+      main(Input(inputType: itFile, path: filename), port.Natural)
+    elif dirExists(filename):
+       main(Input(inputType: itDir, path: filename), port.Natural)
+    else:
+      echo fmt"File {filename} not found!"
 
