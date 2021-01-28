@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.0.0"
+version       = "1.0.1"
 author        = "Rainbow Asteroids"
 description   = "A program to staticlly host files or directories over HTTP"
 license       = "GPL-3.0"
@@ -36,6 +36,7 @@ before copy:
 
 task copy, "Copies the man pages and output/host to their proper places for installation":
   cpFile("output/host", "/usr/bin/host")
+  exec("chmod 751 /usr/bin/host")
   cpDir("man", "/usr/share/man")
 
 before uncopy:
