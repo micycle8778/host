@@ -95,8 +95,6 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
 
     req.logRequest()
 
-    const header = "{mime}; charset=UTF-8"
-
     proc DirectoryHtmlRequested(query: seq[string]): bool =
       for q in query:
         if q.split(re"=")[0] == "ls":

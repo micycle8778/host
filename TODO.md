@@ -10,4 +10,4 @@ make 404 show parent directory
 
 ~~add man pages~~
 
-add installation nimble tasks and building instructions
+~~add installation nimble tasks and building instructions~~
