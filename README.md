@@ -16,7 +16,7 @@ host is written in [Nim](https://nim-lang.org) and uses pure Nim standard
 libraries, meaning the only thing you need to build host is the Nim compiler.
 to build and install the project on linux operating systems:
 
-1. install Nim (try your package manager, `pacman -Syu nim` or 
+1. install Nim (try your package manager, `sudo pacman -Syu nim` or 
 `sudo apt install nim`)
 
 2. clone the git repo `git clone https://github.com/RainbowAsteroids/host`
