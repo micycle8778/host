@@ -9,11 +9,11 @@ const help_text = """Usage: host [options] [file]
 
 Options:
   --help              : Show this help text
-  -i, --stdin         : Host from stdin. Ignore file parameter.
   -h, --hidden        : Shows hidden files.
-  -q, --quiet         : Hide request logs.
+  -i, --stdin         : Host from stdin. Ignore file parameter.
   --output [file]     : Output request logs to a file.
-  --port [port]       : Host on a specific port (default 8080)"""
+  --port [port]       : Host on a specific port (default 8080)
+  -q, --quiet         : Hide request logs."""
 
 type
   InputType = enum

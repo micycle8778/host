@@ -1,0 +1,89 @@
+.TH host 1 "January 28, 2021" "Version 1.0.0"
+.SH NAME
+host - a simple, static, web server for easily hosting files over LAN
+
+.SH SYNOPSIS
+host --help
+
+host [-h] [-q] FILE
+
+host [--hidden] [--quiet] [--output OUTPUT_FILE] [--port PORT] FILE
+
+host -i [-h] [-q]
+
+host --stdin [--hidden] [--quiet] [--output OUTPUT_FILE] [--port PORT]
+
+.SH DESCRIPTION
+
+host is a simple, static, web server for easily hosting files over LAN. host
+makes no security guarantees, so it should only be used on a LAN that you trust
+(no port forwarding and probably no coffee shops).
+
+host runs in three different modes: file, stdin, and directory.
+
+.PP
+In file mode, the server responds to GET requests with the contents of the
+file, regardless of the route sent. In file mode, the program reads the
+contents of the file every time a GET request is sent.
+
+Stdin mode acts similarly to file mode, just that host reads from stdin instead
+of a file and stdin is only read once. Because of this read-once property of
+host, it could be used as a method to host a file without changes on disk
+affecting changes in what is being hosted.
+
+.PP
+Directory mode is very different. In directory mode, the server acts like a
+real server, allowing the clients to traverse the directory tree, where the
+root of the directory tree is the specified directory (see FILE above). host
+has an html template, known as directory.html, embeded inside. This html
+template is invoked every time a user sends a request to a directory that does
+not contain an index.html file, or when the user adds the ls key to their query
+(localhost:PORT/foobar?ls).
+
+.PP
+These modes are selected at runtime based on the command line arguments passed
+into host. If the -i or --stdin option is selected, host will execute in stdin
+mode. If a file is passed into the FILE argument (see SYNOPSIS), host will run
+in file mode. Likewise, if a directory is passed into the FILE argument, host
+will run in directory mode.
+
+.SH OPTIONS
+
+.TP
+.B --help
+
+Displays help text and exits
+
+.TP
+.B -h, --hidden
+
+Shows hidden files. This option is only useful in directory mode and will do
+nothing if it is outside of directory mode.
+
+.TP
+.B -i, --stdin
+
+Puts host into stdin mode and will serve whatever it finds from stdin.
+
+.TP
+.B --output [FILE]
+
+Instead of printing out request logs, the request logs will be silently sent
+to FILE.
+
+.TP
+.B --port [PORT]
+
+Set the port host will be host on. Set to 8080 by default.
+
+.TP
+.B -q, --quiet
+
+Prevents host from printing request logs.
+
+.SH AUTHOR
+
+Please send all bug reports to the GitHub issue tracker:
+.B https://github.com/RainbowAsteroids/host/issues
+
+host was written by Rainbow Asteroids (rainbowasteroids@protonmail.com) in Nim.
