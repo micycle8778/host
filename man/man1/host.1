@@ -1,4 +1,4 @@
-.TH host 1 "January 28, 2021" "Version 1.0.0"
+.TH host 1 "January 28, 2021" "Version 1.1.0"
 .SH NAME
 host - a simple, static, web server for easily hosting files over LAN
 
@@ -64,6 +64,15 @@ nothing if it is outside of directory mode.
 .B -i, --stdin
 
 Puts host into stdin mode and will serve whatever it finds from stdin.
+
+.TP
+.B --mime [mimetype]
+
+Sets the mimetype that will be sent by host. This is useful for stdin mode, as
+the default mimetype is text/plain. In file mode, the mimetype is determined
+via the file extension. This option overrides that. Mimetypes should be
+inputted via their file extensions and not the `type/standard` format.
+(so, html over text/html, txt over text/plain, etc.)
 
 .TP
 .B --output [FILE]

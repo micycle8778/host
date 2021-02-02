@@ -7,7 +7,7 @@ trust (no port forwarding and probably no coffee shops).
 host offers files over http instead of ftp or ssh, making files much more
 accessible to any device with a browser (which is every device). your browser
 can also render html, svgs, pictures, videos, pdfs, etc. without the need of
-additional software. ofcource, host is read-only, so if you need your clients
+additional software. of cource, host is read-only, so if you need your clients
 to write to your server too, it's better to use real file sharing
 software/protocols. any linux box should have built-in support for sftp.
 
@@ -50,13 +50,14 @@ you can even host files or from stdin
 host index.html
 ```
 ```
-echo "<h1>my first website</h1>" | host
+echo "<h1>my first website</h1>" | host --mime html
 ```
 
 at any point, you can look at the stuff being hosted via opening your web
 browser and typing in `localhost:PORT` on the machine running host or by
 taking your phone or other device on the same network and typing in the
-local IP of the host machine, `192.168.0.254:PORT`.
+local IP of the host machine. It may look a little something like this: 
+`192.168.0.254:PORT`.
 
 if host is running in directory mode, a directory view can be seen if
 the directory does not contain a `index.html` file or if the user

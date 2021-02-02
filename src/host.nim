@@ -10,8 +10,9 @@ const help_text = """Usage: host [options] [file]
 
 Options:
   --help              : Show this help text
-  -h, --hidden        : Shows hidden files.
-  -i, --stdin         : Host from stdin. Ignore file parameter.
+  -h, --hidden        : Shows hidden files. Only useful in directory mode.
+  -i, --stdin         : Host from stdin. Ignores file parameter.
+  --mime [mimetype]   : Set the mimetype of the file/stdin. Ignored in directory mode.
   --output [file]     : Output request logs to a file.
   --port [port]       : Host on a specific port (default 8080)
   -q, --quiet         : Hide request logs."""
@@ -52,16 +53,21 @@ proc logRequest(req: Request) =
     else:
       echo log
 
-proc generateRequestHandlerFromString(data: string): proc =
+proc generateHeader(mime: string): HttpHeaders =
+      [("content-type", fmt"{mime}; charset=UTF-8")].newHttpHeaders
+
+proc generateRequestHandlerFromString(data, mime: string): proc =
+  let header = generateHeader(mime)
   proc requestHandler(req: Request) {.async.} =
     req.logRequest()
-    await req.respond(Http200, data)
+    await req.respond(Http200, data, header)
   requestHandler
 
-proc generateRequestHandlerFromFile(fileName: string): proc =
+proc generateRequestHandlerFromFile(fileName, mime: string): proc =
+  let header = generateHeader(mime)
   proc requestHandler(req: Request) {.async.} =
     req.logRequest()
-    await req.respond(Http200, readFile(fileName))
+    await req.respond(Http200, readFile(fileName), header)
   requestHandler
 
 proc generateRequestHandlerFromDirectory(dir: string): proc =
@@ -74,9 +80,6 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
     # 3a. If found, send index.html
     # 3b. If not found, send directory.html
     # 4. If nothing is found, send a 404
-
-    proc generateHeader(mime: string): HttpHeaders =
-      [("content-type", fmt"{mime}; charset=UTF-8")].newHttpHeaders
 
     type Warning = enum
       wNoIndex = "no index.html found"
@@ -166,25 +169,33 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
 
   requestHandler
 
-proc main(input: Input, port: Natural) =
+proc main(input: Input, port: Natural, mime: string) =
+  var mime = mime
   var server = newAsyncHttpServer()
+  let mimedb = newMimetypes()
 
   echo "Starting server with IP ", $getPrimaryIPAddr(), " and port ", port
   case input.inputType:
     of itFile:
+      if mime != "":
+        mime = mimedb.getMimeType(mime)
+      else:
+        mime = mimedb.getMimeType(input.path.splitFile.ext)
       waitFor server.serve(Port(port),
-                           generateRequestHandlerFromFile(input.path))
+                           generateRequestHandlerFromFile(input.path, mime))
     of itDir:
       waitFor server.serve(Port(port),
                            generateRequestHandlerFromDirectory(input.path))
     of itStdIn:
+      mime = mimedb.getMimeType(mime)
       waitFor server.serve(Port(port),
-                           generateRequestHandlerFromString(input.str))
+                           generateRequestHandlerFromString(input.str, mime))
 
 when isMainModule:
   var port = 8080
   var stdinMode = false
   var filename: string
+  var mime = ""
 
   var p = initOptParser(shortNoVal = {'i', 'h', 'q'},
                         longNoVal = @["stdin", "hidden", "quiet"])
@@ -205,21 +216,23 @@ when isMainModule:
                                               file: open(val, fmWrite))
           of "port":
             discard parseInt(val, port)
+          of "mime":
+            mime = val
           else: # or `of "help"`
             if key != "help": echo fmt"I didn't understand option `{key}`!\n"
             echo help_text
             quit()
 
   if stdinMode:
-    main(Input(inputType: itStdIn, str: stdin.readAll()), port.Natural)
+    main(Input(inputType: itStdIn, str: stdin.readAll()), port.Natural, mime)
   else:
     if filename == "":
       echo "No filename passed in!\n"
       echo help_text
     elif fileExists(filename):
-      main(Input(inputType: itFile, path: filename), port.Natural)
+      main(Input(inputType: itFile, path: filename), port.Natural, mime)
     elif dirExists(filename):
-       main(Input(inputType: itDir, path: filename), port.Natural)
+       main(Input(inputType: itDir, path: filename), port.Natural, mime)
     else:
       echo fmt"File {filename} not found!"
 

@@ -2,7 +2,7 @@ import os
 
 # Package
 
-version       = "1.0.1"
+version       = "1.1.0"
 author        = "Rainbow Asteroids"
 description   = "A program to staticlly host files or directories over HTTP"
 license       = "GPL-3.0"
@@ -20,7 +20,7 @@ task release, "Builds the release version of host and puts it a output/ director
   mkDir("output")
   exec("nim c -d:release --outdir:output src/host")
 
-before install:
+after install:
   if system.hostOS == "linux":
     echo "Adding man pages to ~/.nimble/man..."
 
