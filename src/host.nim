@@ -84,6 +84,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
     type Warning = enum
       wNoIndex = "no index.html found"
       wRequested = "directory.html requested"
+      wNotFound = "404 - file not found"
 
     type File = object
       name, html: string
@@ -106,9 +107,9 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
 
       return false
 
-    proc generateDirectoryDotHtml(warn: Warning): string =
+    proc generateDirectoryDotHtml(warn: Warning, workingPath, rawReqPath: string): string =
       result = directory_html.replace("{warn}", $warn)
-      result = result.replace("{path}", req.url.path.replace(re"%20", " "))
+      result = result.replace("{path}", rawReqPath.replace(re"%20", " "))
       var files: seq[File]
       var htmlToInsert: string
 
@@ -117,7 +118,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
           continue # Let's not show showHidden files if we aren't told to
 
         let truePath = combineDir(workingPath, path) # Path we need to use
-        let reqPath = combineDir(req.url.path, path) # Path the client uses
+        let reqPath = combineDir(rawReqPath, path) # Path the client uses
         let isDir = dirExists(truePath) # isDir field for file obj
 
         var html = file_html.replace("{file_path}", reqPath)
@@ -146,7 +147,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
          DirectoryHtmlRequested(req.url.query.split("&")):
       if fileExists(workingPath):
         workingPath = parentDir(workingPath)
-      await req.respond(Http200, generateDirectoryDotHtml(wRequested),
+      await req.respond(Http200, generateDirectoryDotHtml(wRequested, workingPath, req.url.path),
                         headers = generateHeader("text/html"))
 
     elif dirExists(workingPath):
@@ -156,7 +157,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
         await req.respond(Http200, readFile(indexPath),
                           headers = generateHeader("text/html"))
       else:
-        await req.respond(Http200, generateDirectoryDotHtml(wNoIndex),
+        await req.respond(Http200, generateDirectoryDotHtml(wNoIndex, workingPath, req.url.path),
                           headers = generateHeader("text/html"))
 
     elif fileExists(workingPath):
@@ -164,8 +165,10 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
       await req.respond(Http200, readFile(workingPath),
                         headers = generateHeader(m.getMimeType(workingPath.splitFile.ext)))
     else:
-      await req.respond(Http404, "Could not find file " & req.url.path,
-                        headers=generateHeader("text/plain"))
+      await req.respond(Http404, generateDirectoryDotHtml(wNotFound, 
+                                                  workingPath.splitFile.dir, 
+                                                  req.url.path.splitFile.dir),
+                        headers=generateHeader("text/html"))
 
   requestHandler
 

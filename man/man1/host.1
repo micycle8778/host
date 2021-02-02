@@ -1,4 +1,4 @@
-.TH host 1 "January 28, 2021" "Version 1.1.0"
+.TH host 1 "January 28, 2021" "Version 1.2.0"
 .SH NAME
 host - a simple, static, web server for easily hosting files over LAN
 
@@ -37,8 +37,9 @@ real server, allowing the clients to traverse the directory tree, where the
 root of the directory tree is the specified directory (see FILE above). host
 has an html template, known as directory.html, embeded inside. This html
 template is invoked every time a user sends a request to a directory that does
-not contain an index.html file, or when the user adds the ls key to their query
-(localhost:PORT/foobar?ls).
+not contain an index.html file, when the user adds the ls key to their query
+(localhost:PORT/foobar?ls), or when the user requests a file that does not 
+exist.
 
 .PP
 These modes are selected at runtime based on the command line arguments passed

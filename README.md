@@ -60,5 +60,6 @@ local IP of the host machine. It may look a little something like this:
 `192.168.0.254:PORT`.
 
 if host is running in directory mode, a directory view can be seen if
-the directory does not contain a `index.html` file or if the user
-visits the directory with `?ls` at the end of the url.
+the directory does not contain a `index.html` file, if the user
+visits the directory with `?ls` at the end of the url, or if the user
+requests a file/directory that does not exist.
