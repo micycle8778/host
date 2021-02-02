@@ -16,11 +16,11 @@ host is written in [Nim](https://nim-lang.org) and uses pure Nim standard
 libraries, meaning the only thing you need to build host is the Nim compiler.
 to build and install the project:
 
-1. ~~install Nim (try your package manager, `sudo pacman -Syu nim` or
+1. install Nim ~~(try your package manager, `sudo pacman -Syu nim` or
 `sudo apt install nim`)~~ after some
 [helpful people](https://old.reddit.com/r/nim/comments/l74l95/host_is_a_simple_static_web_server_for_lan/gl4rgbk/)
 told me that package managers have a tendency of holding outdated versions of
-Nim, it is now recommended by this README to get nim from
+Nim, it is now recommended by this README to get Nim from
 [choosenim](https://github.com/dom96/choosenim).
 
 2. clone the git repo `git clone https://github.com/RainbowAsteroids/host`

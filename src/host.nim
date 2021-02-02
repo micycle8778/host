@@ -1,6 +1,7 @@
 import asynchttpserver, asyncdispatch
 import strutils, os, re, algorithm, tables
 import mimetypes, strformat, parseopt, parseutils
+import net
 
 # Embed some important resources
 const directory_html = slurp"../assets/directory.html"
@@ -168,7 +169,7 @@ proc generateRequestHandlerFromDirectory(dir: string): proc =
 proc main(input: Input, port: Natural) =
   var server = newAsyncHttpServer()
 
-  echo "Starting server!"
+  echo "Starting server with IP ", $getPrimaryIPAddr(), " and port ", port
   case input.inputType:
     of itFile:
       waitFor server.serve(Port(port),
