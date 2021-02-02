@@ -29,8 +29,35 @@ to update, however.)
 
 3. enter into the source code directory `cd host`
 
-4. run the copy task as root `sudo nimble copy` if you're on linux (maybe
-MacOS?) systems. otherwise, do `nimble release` to build a release version of
-host. this build will be in the `build` directory.
+4. install host via running `nimble install`
 
-to uninstall (on Linux), just run the uncopy task as root `sudo nimble uncopy`.
+to uninstall, use `nimble uninstall`
+
+## using host
+
+to quickly host a directory, just type the following into the terminal:
+```
+host .
+```
+
+you can change the port via the `--port` switch:
+```
+host --port 9001 .
+```
+
+you can even host files or from stdin
+```
+host index.html
+```
+```
+echo "<h1>my first website</h1>" | host
+```
+
+at any point, you can look at the stuff being hosted via opening your web
+browser and typing in `localhost:PORT` on the machine running host or by
+taking your phone or other device on the same network and typing in the
+local IP of the host machine, `192.168.0.254:PORT`.
+
+if host is running in directory mode, a directory view can be seen if
+the directory does not contain a `index.html` file or if the user
+visits the directory with `?ls` at the end of the url.
