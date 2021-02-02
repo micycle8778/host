@@ -56,7 +56,7 @@ echo "<h1>my first website</h1>" | host --mime html
 at any point, you can look at the stuff being hosted via opening your web
 browser and typing in `localhost:PORT` on the machine running host or by
 taking your phone or other device on the same network and typing in the
-local IP of the host machine. It may look a little something like this: 
+local IP of the host machine. it may look a little something like this: 
 `192.168.0.254:PORT`.
 
 if host is running in directory mode, a directory view can be seen if
