@@ -31,7 +31,7 @@ to update, however.)
 
 4. install host via running `nimble install`
 
-to uninstall, use `nimble uninstall`
+to uninstall, use `nimble uninstall host`
 
 ## using host
 
