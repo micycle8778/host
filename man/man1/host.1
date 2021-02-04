@@ -48,6 +48,18 @@ mode. If a file is passed into the FILE argument (see SYNOPSIS), host will run
 in file mode. Likewise, if a directory is passed into the FILE argument, host
 will run in directory mode.
 
+.PP
+The way host handles mimetypes depends on the mode host is in. If host is in
+directory or file mode, host will respond with the mimetype appropriate for
+the file, based on the file extension, with the default being text/plain.
+If host is started in stdin mode, host will respond with the text/plain
+mimetype.
+
+Using the --mime option, and if host is in file or stdin mode, host will
+start with the mimetype described. Note: the --mime option expects file
+extentions, so use html instead of text/html, txt instead of
+text/plain, etc
+
 .SH OPTIONS
 
 .TP
