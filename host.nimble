@@ -1,6 +1,8 @@
+import os
+
 # Package
 
-version       = "1.2.0"
+version       = "1.2.1"
 author        = "Rainbow Asteroids"
 description   = "A program to staticlly host files or directories over HTTP"
 license       = "GPL-3.0"
