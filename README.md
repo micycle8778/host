@@ -112,10 +112,12 @@ of any request and act accordingly. if the path points to a file, then host
 will send the file back. if the path is a directory, host searches for a
 `index.html` in that directory. if host does not find `index.html`, host
 will send back a view of all the file and folders in the directory
-(otherwise known as `directory.html`). if the path points to nothing (in
-other words, a 404), host will send back a directory view of the parent
-directory (so IP:PORT/path/to/nothing/404 will return the directory view
-of path/to/nothing).
+(otherwise known as `directory.html`). if the `ls` query is sent (so host sees
+IP:PORT/path/to/foo/bar/?ls), host will automatically send the directory view 
+without checking if the directory has a `index.html` if the path points to 
+nothing (in other words, a 404), host will send back a directory view of the 
+parent directory (so `IP:PORT/path/to/nothing/404` will return the directory 
+view of `path/to/nothing`).
 
 these modes are selected based on the settings host is launched with. if there
 is a stdin option (`host -i ...`, `host --stdin ...`), host will start in stdin
